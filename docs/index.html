@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Learning for Content Refresh Opportunity Scoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F7F3;
+    --card:#FFFFFF;
+    --ink:#14181B;
+    --ink-soft:#52585E;
+    --ink-faint:#83898F;
+    --line:#DCDBD2;
+    --accent:#1E5F63;
+    --accent-soft:#E7EFEE;
+    --warm:#B14A2B;
+    --warm-soft:#F5E8E2;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:16.5px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent-soft);}
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  h1,h2,h3{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-weight:600;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+
+  .wrap{max-width:760px; margin:0 auto; padding:0 28px;}
+  .wrap-wide{max-width:900px; margin:0 auto; padding:0 28px;}
+
+  /* ---------- Hero ---------- */
+  header.hero{
+    border-bottom:1px solid var(--line);
+    padding:88px 0 56px;
+  }
+  .hero .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--accent);
+    margin-bottom:22px;
+    letter-spacing:0.02em;
+  }
+  .hero h1{
+    font-size:clamp(32px, 4.4vw, 45px);
+    line-height:1.14;
+    margin:0 0 22px;
+    max-width:13.5ch;
+  }
+  .hero .dek{
+    font-size:18px;
+    color:var(--ink-soft);
+    max-width:56ch;
+    margin:0 0 30px;
+  }
+  .hero .meta{
+    display:flex; flex-wrap:wrap; gap:8px 22px;
+    font-size:13.5px; color:var(--ink-faint);
+    border-top:1px solid var(--line);
+    padding-top:20px;
+  }
+  .hero .meta span b{color:var(--ink-soft); font-weight:500;}
+
+  /* ---------- Sections ---------- */
+  section{padding:52px 0; border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:22px;}
+  .sec-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; color:var(--ink-faint);
+    min-width:26px;
+  }
+  h2.sec-title{font-size:24px; margin:0;}
+  section p{color:var(--ink-soft); margin:0 0 16px; max-width:66ch;}
+  section p:last-child{margin-bottom:0;}
+  section ul, section ol{color:var(--ink-soft); max-width:64ch; padding-left:22px;}
+  section li{margin-bottom:8px;}
+  code{
+    font-family:'IBM Plex Mono', monospace;
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:1.5px 5px;
+    border-radius:2px;
+    font-size:0.9em;
+  }
+  pre{
+    background:#101416;
+    color:#DCE6E4;
+    padding:18px 20px;
+    border-radius:var(--radius);
+    overflow-x:auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    line-height:1.6;
+  }
+  pre code{background:none; color:inherit; padding:0;}
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-left:3px solid var(--accent);
+    background:var(--accent-soft);
+    padding:20px 24px;
+    border-radius:0 var(--radius) var(--radius) 0;
+    margin:24px 0;
+  }
+  .callout .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; color:var(--accent);
+    margin-bottom:8px;
+  }
+  .callout p{color:var(--ink); font-size:17px; margin:0; max-width:60ch; font-family:'Source Serif 4', serif;}
+
+  .callout.warm{border-left-color:var(--warm); background:var(--warm-soft);}
+  .callout.warm .label{color:var(--warm);}
+
+  /* ---------- Metric cards ---------- */
+  .metric-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin:26px 0;
+  }
+  .metric-card{
+    background:var(--card);
+    padding:20px 16px;
+    text-align:left;
+  }
+  .metric-card .val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:26px;
+    font-weight:600;
+    color:var(--accent);
+    line-height:1;
+  }
+  .metric-card .lbl{
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:8px;
+  }
+  @media (max-width:640px){
+    .metric-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ---------- Tables ---------- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:22px 0;
+    font-size:14.5px;
+  }
+  caption{
+    text-align:left;
+    font-size:13px;
+    color:var(--ink-faint);
+    margin-bottom:8px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  th, td{
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:500;
+    font-size:12px;
+    color:var(--ink-faint);
+    text-transform:none;
+  }
+  td.num, th.num{text-align:right; font-family:'IBM Plex Mono', monospace;}
+  tr.highlight td{background:var(--accent-soft); font-weight:500;}
+  tr.highlight td:first-child{border-left:3px solid var(--accent); padding-left:11px;}
+
+  figure{margin:26px 0 8px;}
+  figure img{width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:var(--radius); background:#fff;}
+  figcaption{font-size:13px; color:var(--ink-faint); margin-top:10px; max-width:60ch;}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:32px;}
+  @media (max-width:640px){.two-col{grid-template-columns:1fr;}}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:18px 0;}
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    border:1px solid var(--line);
+    padding:5px 10px;
+    border-radius:20px;
+    color:var(--ink-soft);
+  }
+
+  footer{
+    padding:44px 0 70px;
+    color:var(--ink-faint);
+    font-size:13.5px;
+  }
+  footer a{color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">FlyRank AI Fluency / ML Internship — Capstone · Refresh / Content Opportunity Scoring</div>
+    <h1>Machine Learning for Content Refresh Opportunity Scoring</h1>
+    <p class="dek">A leakage-aware, client-held-out approach to ranking which pages a content team should review first — built and validated on a 30,000-row anonymized dataset, evaluated against a transparent rule-based baseline.</p>
+    <div class="meta">
+      <span>Dataset: <b>30,000 rows · 32 clients</b></span>
+      <span>Validation: <b>80/20 client-held-out, seed 42</b></span>
+      <span>Selected model: <b>Logistic Regression</b></span>
+      <span>Primary metric: <b>Precision@50</b></span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="abstract">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Abstract</h2></div>
+      <p>Content teams often manage far more pages than they can manually review, making it necessary to decide which pages deserve attention first. This study asks whether historical visibility, freshness, content, and engagement signals can rank pages by their likelihood of being in an observed state of search-performance decline. The dataset is a 30,000-row anonymized internship release; the target, <code>is_declining_label</code>, is defined as <code>trend_direction == "down"</code> (54.2% of rows). A transparent rule-based baseline is compared against Logistic Regression, Decision Tree, and Random Forest classifiers, all evaluated on an identical client-held-out split so no client appears in both training and test data.</p>
+      <p>Logistic Regression produced the strongest held-out ranking performance on the primary decision metric — Precision@50 of 0.82 versus 0.26 for the baseline, with a ROC-AUC of 0.731. These are observed associations within this dataset and validation design, not evidence that the identified signals cause decline, or that acting on them will change search rankings. The practical implication is a repeatable, human-reviewed workflow for prioritizing which pages an editorial team examines first — not an automated content-change system, and not a model of how Google ranks pages.</p>
+    </div>
+  </section>
+
+  <section id="question">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Research question</h2></div>
+      <div class="callout">
+        <div class="label">RESEARCH QUESTION</div>
+        <p>Can historical visibility, freshness, content, and engagement signals be used to identify content that is more likely to be declining, so that teams can prioritize which pages should be reviewed or refreshed first?</p>
+      </div>
+      <p>A ranked review queue is more useful here than a binary prediction: it lets an analyst work down a prioritized list until their available review capacity — not the model's confidence threshold — is exhausted. The system is decision support. It ranks and explains; a person decides and acts.</p>
+    </div>
+  </section>
+
+  <section id="data">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">Data</h2></div>
+      <p>The anonymized starter release <code>content_refresh_anonymized.csv</code> contains <strong>30,000 rows and 44 columns</strong>, one row per content item, across <strong>32 clients</strong>. After the notebook's modeling-population filters (<code>impressions_90d &gt; 0</code>, <code>content_age_days &ge; 90</code>, dedup by <code>content_id</code>), the population remained the full 30,000 rows — no rows were removed by these filters in this release.</p>
+
+      <table>
+        <caption>Target distribution — trend_direction (n = 30,000)</caption>
+        <thead><tr><th>Trend</th><th class="num">Rows</th></tr></thead>
+        <tbody>
+          <tr class="highlight"><td>down (declining label)</td><td class="num">16,262</td></tr>
+          <tr><td>stable</td><td class="num">5,962</td></tr>
+          <tr><td>up</td><td class="num">4,388</td></tr>
+          <tr><td>new</td><td class="num">2,236</td></tr>
+          <tr><td>flat</td><td class="num">1,152</td></tr>
+        </tbody>
+      </table>
+
+      <p>Overall declining-label rate: <strong>54.207%</strong>. Signal categories used as inputs span search/keyword context, content characteristics, 90-day visibility and traffic, engagement, position/CTR, and freshness/age — all drawn from fields actually present in the CSV.</p>
+
+      <div class="callout warm">
+        <div class="label">DATA SAFETY</div>
+        <p style="font-size:15px;">The dataset contains no client names, domains, URLs, private queries, or credentials. <code>client_id</code> and <code>content_id</code> are opaque anonymized identifiers used only to build the client-level split and deduplicate rows — never as model inputs, and never reproduced here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="methodology">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">Methodology</h2></div>
+
+      <h3 style="font-size:17px; margin-bottom:10px;">Feature contract</h3>
+      <p><strong>23 numeric features</strong> (search volume, competition, cpc, content length, 90-day traffic/engagement counts, visibility consistency, position, CTR, freshness) and <strong>9 categorical features</strong> (competition level, content type, intent, and tiered age/freshness/length/impression/position groups) — 32 model inputs total. Numeric fields are median-imputed with missingness indicators and standardized; categorical fields are imputed with the training mode and one-hot encoded. All preprocessing is fit only on the training partition, inside one <code>sklearn</code> pipeline.</p>
+
+      <h3 style="font-size:17px; margin:22px 0 10px;">Excluded fields (leakage screen)</h3>
+      <table>
+        <thead><tr><th>Field(s)</th><th>Reason for exclusion</th></tr></thead>
+        <tbody>
+          <tr><td><code>content_id</code>, <code>client_id</code></td><td>Identifiers; <code>client_id</code> used only to build the grouped split</td></tr>
+          <tr><td><code>trend_direction</code>, <code>trend_pct</code></td><td>Directly define the label</td></tr>
+          <tr><td><code>*_last_30d</code>, <code>*_prev_30d</code> (6 fields)</td><td>The exact windows the trend is computed from</td></tr>
+          <tr><td><code>provider_used</code>, <code>model_used</code></td><td>Not decision-relevant to review prioritization</td></tr>
+        </tbody>
+      </table>
+      <p>The notebook asserts programmatically that these 12 fields never intersect with the 32-field feature set.</p>
+
+      <h3 style="font-size:17px; margin:22px 0 10px;">Baseline</h3>
+      <pre><code>visibility_percentile      = rank_pct(log1p(impressions_90d))
+freshness_risk_percentile  = rank_pct(days_since_last_update)
+stale_visible               = (days_since_last_update &gt;= 180) &amp; (impressions_90d &gt;= 500)
+
+baseline_score = 2.0 * stale_visible + 0.5 * visibility_percentile + 0.5 * freshness_risk_percentile</code></pre>
+      <p>Computed only on the held-out test population. A learned model only earns its added complexity if it meaningfully beats this transparent, auditable rule.</p>
+
+      <h3 style="font-size:17px; margin:22px 0 10px;">Models evaluated</h3>
+      <div class="chip-row">
+        <span class="chip">Logistic Regression — balanced class weight</span>
+        <span class="chip">Decision Tree — max_depth 5</span>
+        <span class="chip">Random Forest — 200 trees, max_depth 10</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="validation">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">05</span><h2 class="sec-title">Validation design</h2></div>
+      <p>All models are compared on an identical <strong>80/20 client-held-out split</strong>, built deterministically with <code>random_state=42</code>. Entire clients — not individual rows — are assigned to the test set, so no client's pages appear in both partitions.</p>
+
+      <div class="two-col">
+        <table>
+          <caption>Training partition</caption>
+          <tbody>
+            <tr><td>Rows</td><td class="num">27,675</td></tr>
+            <tr><td>Clients</td><td class="num">26</td></tr>
+            <tr><td>Declining rate</td><td class="num">55.476%</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>Test partition</caption>
+          <tbody>
+            <tr><td>Rows</td><td class="num">2,325</td></tr>
+            <tr><td>Clients</td><td class="num">6</td></tr>
+            <tr><td>Declining rate</td><td class="num">39.097%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Client-level separation is a stronger generalization test than a random row split: pages from the same client tend to share editorial style, templates, and domain-level SEO characteristics, so a row-level split risks rewarding a model for recognizing a client rather than learning transferable signal-decline relationships.</p>
+
+      <div class="callout warm">
+        <div class="label">HONEST CAVEAT</div>
+        <p style="font-size:15px;">Client-held-out validation is <strong>not</strong> time-based validation — it does not test performance on future data. It also produced a different label prevalence between train (55.5%) and test (39.1%), a real side effect of splitting by client rather than by stratified row. Passing this split is evidence of cross-client generalization within this dataset; it is not evidence of production readiness.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <div class="wrap-wide">
+      <div class="sec-head"><span class="sec-num">06</span><h2 class="sec-title">Results</h2></div>
+      <p>All figures below are computed on the identical 2,325-row, 6-client held-out test partition.</p>
+
+      <table>
+        <caption>Model comparison — same test split for every row</caption>
+        <thead>
+          <tr><th>Model</th><th class="num">ROC-AUC</th><th class="num">PR-AUC</th><th class="num">P@10</th><th class="num">P@20</th><th class="num">P@50</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th></tr>
+        </thead>
+        <tbody>
+          <tr class="highlight"><td>Logistic Regression</td><td class="num">0.731</td><td class="num">0.626</td><td class="num">0.80</td><td class="num">0.80</td><td class="num">0.82</td><td class="num">0.647</td><td class="num">0.570</td><td class="num">0.606</td></tr>
+          <tr><td>Random Forest</td><td class="num">0.746</td><td class="num">0.607</td><td class="num">0.80</td><td class="num">0.70</td><td class="num">0.72</td><td class="num">0.566</td><td class="num">0.741</td><td class="num">0.642</td></tr>
+          <tr><td>Decision Tree</td><td class="num">0.742</td><td class="num">0.575</td><td class="num">0.60</td><td class="num">0.65</td><td class="num">0.66</td><td class="num">0.569</td><td class="num">0.716</td><td class="num">0.634</td></tr>
+          <tr><td>Week-4 Baseline</td><td class="num">—</td><td class="num">—</td><td class="num">0.70</td><td class="num">0.35</td><td class="num">0.26</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="label">KEY FINDING</div>
+        <p>Logistic Regression achieved the strongest top-K ranking performance among the evaluated approaches under this validation setup, reaching Precision@50 of 0.82 versus 0.26 for the rule-based baseline — producing a far more concentrated queue of observed declining pages at a review-sized queue length. Random Forest reached the highest ROC-AUC (0.746) and Recall (0.741), making it a reasonable alternative for a team more concerned with not missing declining pages than with tight top-50 precision. Neither result implies anything about causation or about Google's ranking systems.</p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card"><div class="val">0.731</div><div class="lbl">ROC-AUC</div></div>
+        <div class="metric-card"><div class="val">0.626</div><div class="lbl">PR-AUC</div></div>
+        <div class="metric-card"><div class="val">0.82</div><div class="lbl">Precision@50</div></div>
+        <div class="metric-card"><div class="val">0.570</div><div class="lbl">Recall</div></div>
+        <div class="metric-card"><div class="val">0.606</div><div class="lbl">F1</div></div>
+      </div>
+      <p style="font-size:13px; color:var(--ink-faint); margin-top:-8px;">Selected model: Logistic Regression, selected by highest held-out Precision@50.</p>
+
+      <figure>
+        <img src="assets/capstone_precision_at_k.png" alt="Bar chart comparing Precision@10, Precision@20, and Precision@50 for Logistic Regression, Random Forest, Decision Tree, and the Week-4 baseline">
+        <figcaption>Fig. 1 — Precision@K across all four approaches, same held-out test population. The learned models' advantage over the baseline widens sharply as queue size grows.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="interpretation">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">Model interpretation</h2></div>
+      <p>Because Logistic Regression was selected, "importance" here is the absolute magnitude of standardized coefficients — how strongly a feature moves the model's log-odds of the declining label — not a tree-based split-importance measure.</p>
+
+      <table>
+        <caption>Top model signals — Logistic Regression</caption>
+        <thead><tr><th>Rank</th><th>Feature</th><th class="num">|Coefficient|</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>word_count</td><td class="num">1.028</td></tr>
+          <tr><td>2</td><td>position_tier = top_3</td><td class="num">0.912</td></tr>
+          <tr><td>3</td><td>char_count</td><td class="num">0.869</td></tr>
+          <tr><td>4</td><td>users_90d</td><td class="num">0.758</td></tr>
+          <tr><td>5</td><td>sessions_90d</td><td class="num">0.684</td></tr>
+          <tr><td>6</td><td>days_with_impressions</td><td class="num">0.590</td></tr>
+          <tr><td>7</td><td>days_with_sessions</td><td class="num">0.462</td></tr>
+          <tr><td>8</td><td>word_count_tier = &lt;1000</td><td class="num">0.455</td></tr>
+          <tr><td>9</td><td>word_count_tier = 3500+</td><td class="num">0.408</td></tr>
+          <tr><td>10</td><td>main_intent = navigational</td><td class="num">0.408</td></tr>
+        </tbody>
+      </table>
+
+      <figure>
+        <img src="assets/capstone_top_feature_importance.png" alt="Horizontal bar chart of the top 10 Logistic Regression feature importances">
+        <figcaption>Fig. 2 — Top 10 model signals. Content length and traffic-consistency measures dominate; content age and freshness fields rank lower in this fitted model.</figcaption>
+      </figure>
+
+      <p>These are predictive associations within the fitted model on this dataset — not causal claims. Content length was among the stronger predictive signals; this does not mean word count causes decline, and it says nothing about how Google's ranking systems weight content length.</p>
+    </div>
+  </section>
+
+  <section id="recommendations">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Ranked recommendations</h2></div>
+      <p>The selected model is refit on the full 30,000-row population and scores every page with a decline probability, producing a ranked queue with rule-based action categories and reason codes.</p>
+
+      <table>
+        <caption>Action mix — full ranked queue (n = 30,000)</caption>
+        <thead><tr><th>Action</th><th>Trigger</th><th class="num">Rows</th></tr></thead>
+        <tbody>
+          <tr><td>refresh_and_review</td><td>prob ≥ 0.75 and stale and still visible</td><td class="num">0</td></tr>
+          <tr class="highlight"><td>priority_review</td><td>prob ≥ 0.75</td><td class="num">1,783</td></tr>
+          <tr><td>monitor_closely</td><td>prob ≥ 0.50</td><td class="num">14,518</td></tr>
+          <tr><td>monitor</td><td>default</td><td class="num">13,699</td></tr>
+        </tbody>
+      </table>
+
+      <figure>
+        <img src="assets/capstone_action_mix.png" alt="Bar chart of the number of content items in each recommended action category">
+        <figcaption>Fig. 3 — Distribution of recommended actions across the full ranked queue.</figcaption>
+      </figure>
+
+      <div class="callout warm">
+        <div class="label">HONEST OBSERVATION</div>
+        <p style="font-size:15px;"><code>refresh_and_review</code> — reserved for pages that are simultaneously high-probability, stale, and still visible — did not trigger for any page in this run. Fewer than 20 of 30,000 pages meet the underlying "stale + visible" condition at all, so most flagged pages are not simply old and forgotten. A staleness-only refresh playbook would miss most of what the model actually flags.</p>
+      </div>
+
+      <p><strong>priority_review</strong> pages are the recommended starting point for human review — not automatic edits. A model score and reason code are a prioritization signal, offering a starting hypothesis for a reviewer, never an instruction to publish a change.</p>
+    </div>
+  </section>
+
+  <section id="limitations">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">09</span><h2 class="sec-title">Limitations</h2></div>
+      <ul>
+        <li><strong>Proxy target</strong> — the label is an observed trend outcome, not a validated measure of content quality or refresh need.</li>
+        <li><strong>Association, not causation</strong> — reported relationships, including feature importance, describe what the model learned, not what would happen if a feature were changed.</li>
+        <li><strong>Client-held-out ≠ time-based validation</strong> — generalization across clients within one window, not to future time periods.</li>
+        <li><strong>Train/test base-rate shift</strong> — 55.5% vs. 39.1% declining rate, a side effect of client-level splitting.</li>
+        <li><strong>Dataset scope</strong> — one anonymized release, 32 clients; not assumed to generalize automatically elsewhere.</li>
+        <li><strong>Small held-out client count</strong> — only 6 clients form the entire test partition.</li>
+        <li><strong>Single split evaluated</strong> — no repeated splits or cross-validated confidence intervals.</li>
+        <li><strong>Threshold/queue-size dependence</strong> — metrics reported at one threshold and three queue sizes only.</li>
+        <li><strong>Feature-importance limits</strong> — linear coefficients capture additive, not interaction, effects.</li>
+        <li><strong>Potential distribution shift</strong> — search and content behavior can change after this data was collected.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="conclusion">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">10</span><h2 class="sec-title">Conclusion</h2></div>
+      <p>Comparing a transparent rule-based baseline against three learned classifiers on an identical client-held-out test partition, Logistic Regression produced the strongest top-K ranking performance (Precision@50 = 0.82 vs. 0.26 for the baseline; ROC-AUC = 0.731), with content-length and traffic-consistency signals contributing most to the fitted model. The contribution here is a repeatable, leakage-aware, human-reviewed workflow for prioritizing which content pages deserve editorial attention first — not a claim about how Google ranks pages, and not a guarantee that any specific content action improves outcomes. Every result is an observed association under one validation design on one dataset release: it supports prioritization, not automation.</p>
+    </div>
+  </section>
+
+  <section id="reproducibility">
+    <div class="wrap">
+      <div class="sec-head"><span class="sec-num">11</span><h2 class="sec-title">Reproducibility</h2></div>
+      <p>Based on <code>work/notebooks/capstone.ipynb</code>, executed top to bottom without modification, against <code>data/raw/content_refresh_anonymized.csv</code>. All stochastic steps (client split, Random Forest) use <code>RANDOM_STATE = 42</code>, so results are deterministic given the same dataset.</p>
+      <ol>
+        <li>Place the CSV at <code>data/raw/content_refresh_anonymized.csv</code> relative to the repository root.</li>
+        <li>Run the notebook top to bottom.</li>
+        <li>Outputs are written to <code>work/outputs/</code>: model comparison, top features, ranked top-50, action/reason mixes, and three charts.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      Built on the FlyRank ML Internship dataset · <a href="https://flyrank.ai">flyrank.ai</a><br>
+      No private or client-identifying information is included in this report.
+    </div>
+  </footer>
+
+</main>
+
+</body>
+</html>
